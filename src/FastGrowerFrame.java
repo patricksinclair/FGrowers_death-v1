@@ -25,30 +25,20 @@ class FastGrowerPanel extends JPanel {
 
         int L = bioSys.getL();
         //int K = bioSys.getK();
+        int H = 700;
         int w = getWidth()/L;
-        int h = getHeight()/K;
+        int h = getHeight()/H;
 
         for(int l = 0; l < L; l++) {
-            if(bioSys.getMicrohabitat(l).getN() > 0) {
+            if(bioSys.getMicrohabitats(l).getN_tot() > 0) {
 
-                int nBacs = 0;
-                for(int sp = 0; sp < bioSys.getMicrohabitat(l).getMultiSpecPops().length; sp++){
+                g.setColor(Color.RED);
+                g.fillRect(w*l, 0, w, h*bioSys.getMicrohabitats(l).getN_dead());
 
-                    if(sp == 0) g.setColor(Color.RED);
-                    else if(sp==1) g.setColor(Color.orange);
-                    else if(sp==2) g.setColor(Color.yellow);
-                    else if(sp==3) g.setColor(Color.green);
-                    else if(sp==4) g.setColor(Color.blue);
-                    else if(sp==5) g.setColor(Color.MAGENTA);
-                    else if(sp==6) g.setColor(Color.cyan);
-                    else if(sp==7) g.setColor(Color.GRAY);
-                    else if(sp==8) g.setColor(Color.PINK);
-                    else if(sp==9) g.setColor(new Color(153, 153, 0));
-                    else if(sp==10) g.setColor(new Color(127, 0, 255));
+                g.setColor(Color.GREEN);
+                g.fillRect(w*l, bioSys.getMicrohabitats(l).getN_dead(), w,
+                        h*bioSys.getMicrohabitats(l).getN_alive());
 
-                    g.fillRect(w*l, h*nBacs, w, h*bioSys.getMicrohabitat(l).getMultiSpecPops()[sp]);
-                    nBacs += bioSys.getMicrohabitat(l).getMultiSpecPops()[sp];
-                }
 
             }
         }
@@ -64,7 +54,7 @@ class FastGrowerPanel extends JPanel {
     }
 
     public void updateAlpha(double newAlpha){
-        bioSys = new BioSystem(bioSys.getL(), bioSys.getK(), bioSys.getnSpecies(), newAlpha);
+        bioSys = new BioSystem(bioSys.getL(), bioSys.getS(), newAlpha);
         repaint();
     }
 
@@ -74,10 +64,10 @@ class FastGrowerPanel extends JPanel {
 
 public class FastGrowerFrame extends JFrame {
 
-    int L = 500, K = 256, nSpecies = 11;
+    int L = 500, S = 500;
     double alpha = 0.02;
 
-    BioPanel bioPan;
+    FastGrowerPanel fgPan;
     BioSystem bioSys;
     Timer monteTimer;
 
@@ -87,19 +77,19 @@ public class FastGrowerFrame extends JFrame {
     JLabel alphaLabel = new JLabel("alpha: ");
     JTextField alphaField = new JTextField(String.valueOf(alpha), 10);
 
-    public BioFrame(){
+    public FastGrowerFrame(){
 
-        bioSys = new BioSystem(L, K, nSpecies, alpha);
+        bioSys = new BioSystem(L, S, alpha);
 
-        bioPan = new BioPanel(bioSys);
-        bioPan.setPreferredSize(new Dimension(1000, 512));
+        fgPan = new FastGrowerPanel(bioSys);
+        fgPan.setPreferredSize(new Dimension(1000, 700));
 
         JPanel controlPanel = new JPanel();
         controlPanel.add(goButton);
         controlPanel.add(alphaLabel);
         controlPanel.add(alphaField);
 
-        getContentPane().add(bioPan, BorderLayout.CENTER);
+        getContentPane().add(fgPan, BorderLayout.CENTER);
         getContentPane().add(controlPanel, BorderLayout.SOUTH);
         pack();
 
@@ -110,7 +100,7 @@ public class FastGrowerFrame extends JFrame {
             }
         });
 
-        setTitle("Multispecies simulation");
+        setTitle("Fast Growers w. death simulation");
         setLocation(100, 20);
         setVisible(true);
         setBackground(Color.LIGHT_GRAY);
@@ -122,7 +112,7 @@ public class FastGrowerFrame extends JFrame {
 
 
     public void monteAnimate(){
-        monteTimer = new Timer(0, (e)->{bioPan.monteAnimate();});
+        monteTimer = new Timer(0, (e)->{fgPan.monteAnimate();});
 
         goButton.addActionListener((e)->{
             if(!monteTimer.isRunning()) {
@@ -145,7 +135,7 @@ public class FastGrowerFrame extends JFrame {
 
         alphaField.addActionListener((e)->{
             double alpha = Double.parseDouble(alphaField.getText());
-            bioPan.updateAlpha(alpha);
+            fgPan.updateAlpha(alpha);
         });
     }
 

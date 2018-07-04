@@ -28,6 +28,7 @@ public class BioSystem {
     public int getL(){
         return L;
     }
+    public int getS(){return s;}
     public double getTimeElapsed(){
         return timeElapsed;
     }
@@ -155,7 +156,6 @@ public class BioSystem {
     }
 
 
-/*
 
     public static void exponentialGradient_spatialAndGRateDistributions(double input_alpha){
 
@@ -168,26 +168,36 @@ public class BioSystem {
         double alpha = input_alpha;
         int S = 500;
 
-        String filename = "simple-fastGrowers-alpha="+String.valueOf(alpha)+"-spatialDistribution-FINAL";
-        String filename_gRate = "simple-fastGrowers-alpha="+String.valueOf(alpha)+"-gRateDistribution-FINAL";
-        String filename_precise = "simple-fastGrowers-alpha="+String.valueOf(alpha)+"-spatialDistribution_precise-FINAL";
-        String filename_gRate_precise = "simple-fastGrowers-alpha="+String.valueOf(alpha)+"-gRateDistribution_precise-FINAL";
+        String filename_alive = "fastGrowers_death-alpha="+String.valueOf(alpha)+"-aliveSpatialDistribution-FINAL";
+        String filename_dead = "fastGrowers_death-alpha="+String.valueOf(alpha)+"-deadSpatialDistribution-Final";
+        String filename_gRate = "fastGrowers_death-alpha="+String.valueOf(alpha)+"-gRateDistribution-FINAL";
 
-        int[][][] allMeasurements = new int[nReps][][];
-        double[][][] allGRateMeasurements = new double[nReps][][];
+        String filename_alive_precise = "fastGrowers_death-alpha="+String.valueOf(alpha)
+                +"-aliveSpatialDistribution_precise-FINAL";
+        String filename_dead_precise = "fastGrowers_death-alpha="+String.valueOf(alpha)
+                +"-deadSpatialDistribution_precise-FINAL";
+        String filename_gRate_precise = "fastGrowers_death-alpha="+String.valueOf(alpha)
+                +"-gRateDistribution_precise-FINAL";
 
-        int[][][] allPreciseMeasurements = new int[nReps][][];
-        double[][][] allPreciseGRateMeasurements = new double[nReps][][];
+        int[][][] allN_alive = new int[nReps][][];
+        int[][][] allN_dead = new int[nReps][][];
+        double[][][] allGRates = new double[nReps][][];
+
+        int[][][] allPreciseN_alive = new int[nReps][][];
+        int[][][] allPreciseN_dead = new int[nReps][][];
+        double[][][] allPreciseGRates = new double[nReps][][];
 
         for(int r = 0; r < nReps; r++){
 
             boolean alreadyRecorded = false, alreadyPreciselyRecorded = false;
 
-            int[][] popsOverTime = new int[nTimeMeasurements+1][];
+            int[][] alivePopsOverTime = new int[nTimeMeasurements+1][];
+            int[][] deadPopsOverTime = new int[nTimeMeasurements+1][];
             double[][] gRatesOverTime = new double[nTimeMeasurements+1][];
             int timerCounter = 0;
 
-            int[][] precisePopsOverTime = new int[nTimeMeasurements+1][];
+            int[][] preciseAlivePopsOverTime = new int[nTimeMeasurements+1][];
+            int[][] preciseDeadPopsOverTime = new int[nTimeMeasurements+1][];
             double[][] preciseGRatesOverTime = new double[nTimeMeasurements+1][];
             int preciseTimerCounter = 0;
 
@@ -198,11 +208,12 @@ public class BioSystem {
 
                 bs.performAction();
 
-                if((bs.getTimeElapsed()%preciseInterval >= 0. && bs.getTimeElapsed()%preciseInterval <= 0.01) && !alreadyPreciselyRecorded &&
-                        preciseTimerCounter <= nTimeMeasurements){
+                if((bs.getTimeElapsed()%preciseInterval >= 0. && bs.getTimeElapsed()%preciseInterval <= 0.01)
+                        && !alreadyPreciselyRecorded && preciseTimerCounter <= nTimeMeasurements){
 
                     System.out.println("rep: "+r+"\ttime elapsed: "+String.valueOf(bs.getTimeElapsed())+"\tPRECISE");
-                    precisePopsOverTime[preciseTimerCounter] = bs.getSpatialDistributionArray();
+                    preciseAlivePopsOverTime[preciseTimerCounter] = bs.getLiveSpatialDistributionArray();
+                    preciseDeadPopsOverTime[preciseTimerCounter] = bs.getDeadSpatialDistributionArray();
                     preciseGRatesOverTime[preciseTimerCounter] = bs.getGrowthRatesArray();
 
                     alreadyPreciselyRecorded = true;
@@ -214,7 +225,8 @@ public class BioSystem {
                 if((bs.getTimeElapsed()%interval >= 0. && bs.getTimeElapsed()%interval <= 0.01) && !alreadyRecorded){
 
                     System.out.println("rep: "+r+"\ttime elapsed: "+String.valueOf(bs.getTimeElapsed()));
-                    popsOverTime[timerCounter] = bs.getSpatialDistributionArray();
+                    alivePopsOverTime[timerCounter] = bs.getLiveSpatialDistributionArray();
+                    deadPopsOverTime[timerCounter] = bs.getDeadSpatialDistributionArray();
                     gRatesOverTime[timerCounter] = bs.getGrowthRatesArray();
 
                     alreadyRecorded = true;
@@ -223,25 +235,32 @@ public class BioSystem {
                 if(bs.getTimeElapsed()%interval >= 0.1) alreadyRecorded = false;
             }
 
-            allMeasurements[r] = popsOverTime;
-            allGRateMeasurements[r] = gRatesOverTime;
-            allPreciseMeasurements[r] = precisePopsOverTime;
-            allPreciseGRateMeasurements[r] = preciseGRatesOverTime;
+            allN_alive[r] = alivePopsOverTime;
+            allN_dead[r] = deadPopsOverTime;
+            allGRates[r] = gRatesOverTime;
+            allPreciseN_alive[r] = preciseAlivePopsOverTime;
+            allPreciseGRates[r] = preciseGRatesOverTime;
         }
 
-        double[][] averagedPopDistributions = Toolbox.averagedResults(allMeasurements);
-        double[][] averagedGRateDistributions = Toolbox.averagedResults(allGRateMeasurements);
-        double[][] averagedPrecisePopDistributions = Toolbox.averagedResults(allPreciseMeasurements);
-        double[][] averagedPreciseGRateDistributions = Toolbox.averagedResults(allPreciseGRateMeasurements);
+        double[][] averagedAlivePopDistributions = Toolbox.averagedResults(allN_alive);
+        double[][] averagedDeadPopDistributions = Toolbox.averagedResults(allN_dead);
+        double[][] averagedGRateDistributions = Toolbox.averagedResults(allGRates);
 
-        Toolbox.printAveragedResultsToFile(filename, averagedPopDistributions);
+        double[][] averagedPreciseAlivePopDistributions = Toolbox.averagedResults(allPreciseN_alive);
+        double[][] averagedPreciseDeadPopDistributions = Toolbox.averagedResults(allPreciseN_dead);
+        double[][] averagedPreciseGRateDistributions = Toolbox.averagedResults(allPreciseGRates);
+
+        //print the live and dead results to two separate files, then just join them together in
+        //gnuplot or something
+        Toolbox.printAveragedResultsToFile(filename_alive, averagedAlivePopDistributions);
+        Toolbox.printAveragedResultsToFile(filename_dead, averagedDeadPopDistributions);
         Toolbox.printAveragedResultsToFile(filename_gRate, averagedGRateDistributions);
-        Toolbox.printAveragedResultsToFile(filename_precise, averagedPrecisePopDistributions);
+
+        Toolbox.printAveragedResultsToFile(filename_alive_precise, averagedPreciseAlivePopDistributions);
+        Toolbox.printAveragedResultsToFile(filename_dead_precise, averagedPreciseDeadPopDistributions);
         Toolbox.printAveragedResultsToFile(filename_gRate_precise, averagedPreciseGRateDistributions);
     }
 
-
-*/
 
 
 

@@ -21,6 +21,7 @@ public class Microhabitat {
     public double getC(){return c;}
     public int getN_alive(){return N_alive;}
     public int getN_dead(){return N_dead;}
+    public int getN_tot(){return N_alive+N_dead;}
     public double getD(){return d;}
     public double getB(){return b;}
 
